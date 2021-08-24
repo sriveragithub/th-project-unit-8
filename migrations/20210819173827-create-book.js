@@ -9,10 +9,28 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       title: {
-        type: Sequelize.STRING
+        allowNull: false,
+        type: Sequelize.STRING,
+        validate: {
+          notNull: {
+            msg: 'Please provide a value for "title"!',
+          },
+          notEmpty: {
+            msg: '"title" cannot be an empty string!'
+          }
+        }
       },
       author: {
-        type: Sequelize.STRING
+        allowNull: false,
+        type: Sequelize.STRING,
+        validate: {
+          notNull: {
+            msg: 'Please provide a value for "author"!',
+          },
+          notEmpty: {
+            msg: '"author" cannot be an empty string!'
+          }
+        }
       },
       genre: {
         type: Sequelize.STRING

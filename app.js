@@ -7,6 +7,8 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
+const db = require('./models/index')
+
 var app = express();
 
 // view engine setup
@@ -19,23 +21,44 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+(async () => {
+  try {
+    await db.sequelize.authenticate();
+    console.log('Connection to the database successful!');
+    await db.sequelize.sync();
+  } catch (error) {
+    console.error('Error connecting to the database: ', error);
+  }
+})();
+
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  next(createError(404));
+  const error = new Error()
+  error.status = 404
+  error.message = "404 Error: Page Not Found"
+  next(error);
 });
 
 // error handler
 app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  res.locals.error = err
+  if(!err.status) {
+    err.status = 500
+    err.message = "500 Error: Internal Server Error."
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+    console.log(err.status, err.message)
+
+    res.render('error', { err, title: "Page Not Found" })
+  } else {
+    console.log(err.status, err.message)
+
+    res.status(err.status || 500);
+    res.render('page-not-found', {err, title: "Page Not Found" });
+  }
 });
 
 module.exports = app;
